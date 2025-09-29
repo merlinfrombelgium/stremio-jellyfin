@@ -1,12 +1,11 @@
 # === 1. Build React App ===
-FROM denoland/deno:2.4.1 AS frontend-builder
+FROM node:20-bookworm-slim AS frontend-builder
 
-WORKDIR /app/frontend
+WORKDIR /app
 COPY frontend/package*.json ./
-COPY frontend/deno*.json ./
-RUN deno install
+RUN npm install --legacy-peer-deps
 COPY frontend .
-RUN deno run -A npm:vite build
+RUN npm run build
 
 # === 2. Build Deno App ===
 FROM denoland/deno:alpine-2.4.1
@@ -16,7 +15,7 @@ WORKDIR /app
 COPY . .
 
 # Copy frontend build output into Deno's static folder
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+COPY --from=frontend-builder /app/dist ./frontend/dist
 
 # Set environment variables
 ENV PORT=60421
